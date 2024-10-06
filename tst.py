@@ -23,7 +23,7 @@ if __name__ == '__main__':
     if active_window:
         print(f"Active Window: {active_window.window_text()} (Type: {active_window.friendly_class_name()})")
         print(f"Bounding Box: {active_window.rectangle()}")
-        print_visible_elements(active_window)   # active_window.print_control_identifiers()
+        get_visible_elements(active_window)   # active_window.print_control_identifiers()
     else:
         print("No active window found.")
 

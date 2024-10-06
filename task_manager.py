@@ -1,23 +1,56 @@
 import time
 import pyautogui
-from pywinauto.application import Application
 from pywinauto import Desktop
 from interaction_utils import *
 
-if __name__ == '__main__':
+
+SWITCH_DELAY = 5
+
+
+def try_perform_action(element):
+
+    if element:
+        element_obj = element['element_obj']
+        element_obj.set_focus()
+            
+        element_type = element_obj.friendly_class_name()
+
+        print(f"\nWhat action would you like to perform on {element['name']} ({element_type})?")
+        print("Options: click, set_text")
+        action = input("Enter action: ").strip()
+
+        if action == "click":
+            try:
+                click_element(element)
+            except Exception as e:
+                print(f"Error clicking on element: {e}")
+
+        elif action == "set_text":
+            try:
+                text = input("Enter text to set: ").strip()
+                type_into_element(element, text)
+            except ValueError:
+                print(f"Error typing to element: {e}")
+
+        else:
+            print("Unknown action.")
+    else:
+        print(f"Element not found.")
+
+
+def main():
 
     width, height = pyautogui.size()
-    print(f"Screen Resolution - Width: {width}, Height: {height}\n")
-
-    time.sleep(5)
-    print("Debug sleep. Resuming in 5 seconds...")
+    print(f"\nScreen Resolution - Width: {width}, Height: {height}\n")
 
     # Connect to the desktop using the UI Automation (uia) backend
-    desktop: Desktop = Desktop(backend="uia")
+    desktop = Desktop(backend="uia")
 
     # Start a loop to accept multiple inputs until user decides to quit
     while True:
-        # Add a 2-second delay before each refresh
+        # Add a delay before each refresh
+        print(f"Debug sleep. Resuming in {SWITCH_DELAY} seconds...")
+        time.sleep(SWITCH_DELAY)
 
         # Get the currently active (focused) window
         active_window = desktop.window(active_only=True)
@@ -25,45 +58,27 @@ if __name__ == '__main__':
         # Print details for the active window and its elements
         if active_window:
             print(f"Active Window: {active_window.window_text()} (Type: {active_window.friendly_class_name()})")
-            print(f"Bounding Box: {active_window.rectangle()}")
-            
-            # Re-scan and refresh the UI elements list each time
-            element_list = print_visible_elements(active_window)   # active_window.print_control_identifiers()
+            print(f"Bounding Box: {active_window.rectangle()}\n")
+            element_list = get_visible_elements(active_window)
+            element_data = format_element_list(element_list)
+            print(element_data)
         else:
             print("No active window found.")
             element_list = []
 
         # Simple terminal GUI interaction
-        user_input = input("\nEnter your input ('Type: [text], [element_name]' for typing, '[element_name]' for clicking, or 'quit' to exit): ")
-
-        time.sleep(2)
-
+        user_input = input("\nEnter the name of the element you want to interact with or 'quit' to exit: ")
+        
         # Break the loop if user wants to quit
         if user_input.lower() == 'quit':
             print("Exiting the script. Goodbye!")
             break
 
-        # Check if the user input starts with "Type:" for typing into an element
-        if user_input.startswith("Type: "):
-            # Split the input into the text to type and the element name
-            try:
-                text_to_type, element_name = user_input[6:].split(", ")
-                # Find the element by name and type into it
-                target_element = find_element_by_name(element_name, element_list)
-                if target_element:
-                    # Optionally print bounding box details here
-                    print(f"Found element: {target_element['name']}, Bounding Box: {target_element['rectangle']}, Type: {target_element['type']}")
-                    type_into_element(target_element, text_to_type)
-                else:
-                    print(f"Element '{element_name}' not found.")
-            except ValueError:
-                print("Invalid input format! Please use the format: 'Type: [text], [element_name]'")
-        else:
-            # If input does not start with "Type:", treat it as a click request
-            element_name = user_input.strip()
-            target_element = find_element_by_name(element_name, element_list)
-            if target_element:
-                print(f"Found element: {target_element['name']}, Bounding Box: {target_element['rectangle']}, Type: {target_element['type']}")
-                click_element(target_element)
-            else:
-                print(f"Element '{element_name}' not found.")
+        element_name = user_input.strip()
+        target_element = find_element_by_name(element_name, element_list)
+
+        try_perform_action(target_element)
+
+
+if __name__ == '__main__':
+    main()
