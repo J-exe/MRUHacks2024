@@ -8,32 +8,24 @@ from PIL import Image
 from interaction_utils import *
 import json
 from openai import OpenAI
-import subprocess  # Added to allow opening applications
-
+import subprocess  
 
 
 
 def open_application(app_name):
-    # Simulate pressing the Windows key
     keyboard.send_keys('{VK_LWIN down}{VK_LWIN up}')
     time.sleep(1)  # Wait for the Start Menu to open
 
-    # Type the application name
     keyboard.send_keys(app_name, with_spaces=True)
     time.sleep(1)  # Wait for the search results to appear
 
-    # Press Enter to launch the application
     keyboard.send_keys('{ENTER}')
     time.sleep(5)  # Wait for the application to open
 
 
-# Compress the image (reduce size) before uploading it
 def compress_image(input_image_path, output_image_path, quality=85, max_width=800):
-    # Open the image
     with Image.open(input_image_path) as img:
-        # Resize the image while maintaining aspect ratio
         img.thumbnail((max_width, img.height * max_width // img.width))
-        # Save the image with reduced quality
         img.save(output_image_path, "JPEG", quality=quality)
 
 
@@ -99,7 +91,6 @@ def main():
         # Get the currently active (focused) window
         active_window = desktop.window(active_only=True)
 
-        # Print details for the active window and its elements
         if active_window:
             print(f"Active Window: {active_window.window_text()} (Type: {active_window.friendly_class_name()})")
             print(f"Bounding Box: {active_window.rectangle()}\n")
@@ -179,14 +170,11 @@ def main():
             }
 
 
-            # Send the request to the OpenAI API
             response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
 
-            # After receiving the response
             responseText = response.json()['choices'][0]['message']['content']
             print(f"Response: {responseText}")
 
-            # Parse the response JSON
             try:
                 response_json = json.loads(responseText)  # Convert the JSON string to a Python dictionary
                 element_name = response_json['element_name']
@@ -196,12 +184,10 @@ def main():
                 print(f"Error parsing response JSON: {e}")
                 element_name, action, text = None, None, None
 
-            # Check if the task is marked as done
             if element_name == "DONE":
                 print("Task complete. Exiting loop.")
                 response = "DONE"  # Break out of the loop
             else:
-                # Find the element and perform the action
                 element = find_element_by_name(element_name, element_list)
 
                 if element:
