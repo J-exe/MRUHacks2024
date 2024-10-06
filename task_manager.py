@@ -11,7 +11,7 @@ from openai import OpenAI
 import subprocess  # Added to allow opening applications
 
 
-
+client = OpenAI(api_key=api_key)
 
 def open_application(app_name):
     # Simulate pressing the Windows key
@@ -68,7 +68,7 @@ def try_perform_action(element, action, text=""):
             try:
                 type_into_element(element, text)
                 keyboard.send_keys('{ENTER}')
-                
+                time.sleep(5)
 
             except ValueError:
                 print(f"Error typing to element: {e}")
@@ -136,30 +136,42 @@ def main():
                             {
                                 "type": "text",
                                 "text": (
-                                    "Respond with the following JSON format (ONE ACTION AT A TIME):\n"
+                                    "Respond with the following JSON format (ONE ACTION AT A TIME), if and only if you want to open an app do you say the apps name beside the openAPP feild else leave it blank/empty, if u decide to open an app you must leave every other feild blank:\n"
                                     "{\n"
                                     '    "element_name": "<name_of_element>",\n'
                                     '    "action": "<action_to_perform (click/set_text)>",\n'
+                                    '    "openAPP": "",\n'
                                     '    "text": "<text_to_type (optional, leave empty if action is click)>"\n'
                                     "}\n"
                                     "Only respond with the JSON format. For example:\n"
                                     '{\n'
                                     '    "element_name": "SubmitButton",\n'
                                     '    "action": "click",\n'
+                                    '    "openAPP": "",\n'
                                     '    "text": ""\n'
                                     "}\n"
                                     "or\n"
                                     '{\n'
                                     '    "element_name": "UsernameField",\n'
                                     '    "action": "set_text",\n'
+                                    '    "openAPP": "notepad",\n'
                                     '    "text": "your_username"\n'
+                                    "}\n"
+                                    "If you want to open an app this is the only valid way (all other fields must be blank)\n"
+                                    '{\n'
+                                    '    "element_name": "",\n'
+                                    '    "action": "",\n'
+                                    '    "openAPP": "chrome",\n'
+                                    '    "text": ""\n'
                                     "}\n"
                                     "When the task is complete, respond with:\n"
                                     '{\n'
                                     '    "element_name": "DONE",\n'
                                     '    "action": "none",\n'
+                                    '    "openAPP": "",\n'
                                     '    "text": ""\n'
                                     "}"
+
                                 )
                             },
                             {
@@ -202,6 +214,7 @@ def main():
                 element_name = response_json['element_name']
                 action = response_json['action']
                 text = response_json['text']  # Will be empty if the action is 'click'
+                appToOpen = response_json['openAPP']
             except (json.JSONDecodeError, KeyError) as e:
                 print(f"Error parsing response JSON: {e}")
                 element_name, action, text = None, None, None
@@ -209,8 +222,8 @@ def main():
             # Check if the task is marked as done
             if element_name == "DONE":
                 print("Task complete. Exiting loop.")
-                response = "DONE"  # Break out of the loop
-            else:
+                response = "DONE"  # Break out of the 
+            elif appToOpen == "":
                 # Find the element and perform the action
                 element = find_element_by_name(element_name, element_list)
 
@@ -221,6 +234,9 @@ def main():
                         print(f"Error performing action '{action}' on element '{element_name}': {e}")
                 else:
                     print(f"Element '{element_name}' not found.")
+            else:
+                    open_application("appToOpen")
+
 
 
 if __name__ == '__main__':
