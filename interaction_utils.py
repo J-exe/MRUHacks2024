@@ -30,7 +30,7 @@ def get_visible_elements(element, element_list=None, level=0):
         element_list.append(element_details)
 
         # Delay printing until after all recursion is done
-        # print(f"\t+  Element: {element_details['name']}, Bounding Box: {element_details['rectangle']}, Type: {element_details['type']}\n")
+        print(f"\t+  Element: {element_details['name']}, Bounding Box: {element_details['rectangle']}, Type: {element_details['type']}\n")
 
     # Iteratively process all visible child elements
     for child in element.children():
@@ -98,22 +98,28 @@ def click_element(element):
         # Get the class type of the element
         element_type = element_obj.friendly_class_name()
 
-        clickable_element_types = ["Button", "Hyperlink"]
-        expandable_element_types = ["MenuItem", "TabItem", "ListItem", "TreeItem"]
+        try:
+            click_center(element['rectangle'])  # Click the center of the bounding box (this should expand or select the item)
+            print(f"Expanded menu item: {element['name']}")
+        except Exception as e:
+            print(f"Error while interacting with {element['name']} ({element_type}): {e}")
 
-        if element_type in clickable_element_types:
-            try:
-                element_obj.click_input()  # Click the element
-                print(f"Clicked on element: {element['name']}")
-            except Exception as e:
-                print(f"Error while interacting with {element['name']} ({element_type}): {e}")
+        # clickable_element_types = ["Button", ]
+        # expandable_element_types = ["Hyperlink", "MenuItem", "TabItem", "ListItem", "TreeItem"]
 
-        elif element_type in expandable_element_types:
-            try:
-                click_center(element['rectangle'])  # Click the center of the bounding box (this should expand or select the item)
-                print(f"Expanded menu item: {element['name']}")
-            except Exception as e:
-                print(f"Error while interacting with {element['name']} ({element_type}): {e}")
+        # if element_type in clickable_element_types:
+        #     try:
+        #         element_obj.click_input()  # Click the element
+        #         print(f"Clicked on element: {element['name']}")
+        #     except Exception as e:
+        #         print(f"Error while interacting with {element['name']} ({element_type}): {e}")
+
+        # elif element_type in expandable_element_types:
+        #     try:
+        #         click_center(element['rectangle'])  # Click the center of the bounding box (this should expand or select the item)
+        #         print(f"Expanded menu item: {element['name']}")
+        #     except Exception as e:
+        #         print(f"Error while interacting with {element['name']} ({element_type}): {e}")
     else:
         print("Element not found")
 
