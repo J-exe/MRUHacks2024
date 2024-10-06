@@ -235,7 +235,7 @@ def main():
                 else:
                     print(f"Element '{element_name}' not found.")
             else:
-                    open_application("appToOpen")
+                open_application("appToOpen")
 
 
 
